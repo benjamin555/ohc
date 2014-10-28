@@ -27,6 +27,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,7 +127,18 @@ public class Helper {
 					datas.add("");
 					continue;
 				}else {
-					datas.add( cell.toString());
+					//通过反射获取值
+					if (cell.getCellType()==Cell.CELL_TYPE_NUMERIC) {
+						if (cell instanceof XSSFCell) {
+							XSSFCell x = (XSSFCell)cell;
+							datas.add(x.getRawValue());
+						}
+						
+					}else {
+						datas.add( cell.toString());
+					}
+					
+					
 				}
 			}
 			col.setDatas(datas);
@@ -339,7 +351,8 @@ public class Helper {
 		String[] ps = pString.split(",");
 		List<String> pList = new ArrayList<String>();
 		for (String p : ps) {
-			if (p.indexOf("*")>=0) {
+			if (p.indexOf(".*")>=0) {
+				//全选择查询
 				p = findAllSelect(ts,p.trim());
 			}else if (p.toLowerCase().indexOf("as")>=0) {
 //				do nothing

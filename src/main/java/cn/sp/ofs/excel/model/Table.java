@@ -97,6 +97,11 @@ public class Table {
 	private String getValueString(List<String> cellList) {
 		List<String> nList = new ArrayList<String>();
 		for (String cellVal : cellList) {
+			//如果cellVal存在单引号，进行转义
+			if (cellVal.indexOf("'")>=0) {
+				cellVal =cellVal.replaceAll("'", "''");
+			}
+			
 			cellVal = "'" + cellVal + "'";
 			nList.add(cellVal);
 		}
