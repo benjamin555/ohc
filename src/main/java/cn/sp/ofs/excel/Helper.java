@@ -122,6 +122,12 @@ public class Helper {
 			List<String>datas = new ArrayList<String>();
 			for (int i = sheet.getFirstRowNum()+skipRow; i <=sheet.getLastRowNum(); i++) {
 				Row row2 = sheet.getRow(i);
+				if (row2==null) {
+					logger.warn("跳过行：{}",i);
+					//更新rowSize
+					table.setRowSize(table.getRowSize()-1);
+					continue;
+				}
 				Cell cell = row2.getCell(j);
 				if (cell==null) {
 					datas.add("");

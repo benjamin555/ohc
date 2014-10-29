@@ -51,6 +51,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>1.6</maven.compiler.source>
+		<maven.compiler.target>1.6</maven.compiler.target>
 		<junit.version>4.11</junit.version>
 		<jxls.version>1.0.2</jxls.version>
 		<slf4j.version>1.7.1</slf4j.version>
@@ -100,4 +102,18 @@
 			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
+	<build>
+	<plugins> 
+         <plugin> 
+            <groupId>org.apache.maven.plugins</groupId> 
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.1</version> 
+            <configuration> 
+                <source>${maven.compiler.source}</source> 
+                <target>${maven.compiler.target}</target> 
+                <encoding>UTF8</encoding> 
+            </configuration> 
+         </plugin> 
+    </plugins>
+    </build>
 </project>
