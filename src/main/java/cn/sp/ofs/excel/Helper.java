@@ -119,40 +119,45 @@ public class Helper {
 		//设置cols数据
 		for (int j = 0; j < cols.size(); j++) {
 			Column col = cols.get(j);
-			List<String>datas = new ArrayList<String>();
-			for (int i = sheet.getFirstRowNum()+skipRow; i <=sheet.getLastRowNum(); i++) {
-				Row row2 = sheet.getRow(i);
-				if (row2==null) {
-					logger.warn("跳过行：{}",i);
-					//更新rowSize
-					table.setRowSize(table.getRowSize()-1);
-					continue;
-				}
-				Cell cell = row2.getCell(j);
-				if (cell==null) {
-					datas.add("");
-					continue;
-				}else {
-					//通过反射获取值
-					if (cell.getCellType()==Cell.CELL_TYPE_NUMERIC) {
-						if (cell instanceof XSSFCell) {
-							XSSFCell x = (XSSFCell)cell;
-							datas.add(x.getRawValue());
-						}
-						
-					}else {
-						datas.add( cell.toString());
-					}
-					
-					
-				}
-			}
+			List<String> datas = getColumnData(skipRow, sheet, table, j);
 			col.setDatas(datas);
 		}
 	
 		
 		
 		return table;
+	}
+
+	protected List<String> getColumnData(int skipRow, Sheet sheet, Table table, int j) {
+		List<String>datas = new ArrayList<String>();
+		for (int i = sheet.getFirstRowNum()+skipRow; i <=sheet.getLastRowNum(); i++) {
+			Row row2 = sheet.getRow(i);
+			if (row2==null) {
+				logger.warn("跳过行：{}",i);
+				//更新rowSize
+				table.setRowSize(table.getRowSize()-1);
+				continue;
+			}
+			Cell cell = row2.getCell(j);
+			if (cell==null) {
+				datas.add("");
+				continue;
+			}else {
+				if (cell.getCellType()==Cell.CELL_TYPE_NUMERIC) {
+					if (cell instanceof XSSFCell) {
+						XSSFCell x = (XSSFCell)cell;
+						datas.add(x.getRawValue());
+					}else {
+						datas.add( cell.toString());
+					}
+				}else {
+					datas.add( cell.toString());
+				}
+				
+				
+			}
+		}
+		return datas;
 	}
 
 	/**

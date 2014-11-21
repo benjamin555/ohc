@@ -135,7 +135,7 @@ public class HelperTest {
 		Helper h = new Helper();
 		List<Table> ts = new ArrayList<Table>();
 		Table t1 = new Table();
-		t1.setName("t1");
+		t1.setName("tab1");
 		List<Column> cols = new ArrayList<Column>();
 		Column c = new Column();
 		c.setName("c1");
@@ -147,19 +147,19 @@ public class HelperTest {
 		cols.add(c );
 		t1.setCols(cols );
 		ts.add(t1 );
-		String sql = "select t1.c1,t1.c2 from t1";
+		String sql = "select tab1.c1,tab1.c2 from tab1";
 		sql = h.addComment(sql, ts);
-		Assert.assertTrue("select t1.c1 as \"列1\",t1.c2 as \"列2\" from t1".equals(sql));
+		Assert.assertTrue("select tab1.c1 as \"列1\",tab1.c2 as \"列2\" from tab1".equals(sql));
 		
 		//带*号的
-		sql = "select t1.c1,t1.* from t1";
+		sql = "select tab1.c1,tab1.* from tab1";
 		sql = h.addComment(sql, ts);
-		Assert.assertTrue("select t1.c1 as \"列1\",t1.c1 as \"列1\",t1.c2 as \"列2\" from t1".equals(sql));
+		Assert.assertTrue("select tab1.c1 as \"列1\",tab1.c1 as \"列1\",tab1.c2 as \"列2\" from tab1".equals(sql));
 		
 		//带as 的
-		sql = "select t1.c1 as 列一,t1.* from t1";
+		sql = "select tab1.c1 as 列一,tab1.* from tab1";
 		sql = h.addComment(sql, ts);
-		Assert.assertTrue("select t1.c1 as 列一,t1.c1 as \"列1\",t1.c2 as \"列2\" from t1".equals(sql));
+		Assert.assertTrue("select tab1.c1 as 列一,tab1.c1 as \"列1\",tab1.c2 as \"列2\" from tab1".equals(sql));
 	}
 	
 	
