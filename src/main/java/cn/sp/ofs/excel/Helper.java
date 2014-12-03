@@ -37,7 +37,6 @@ import cn.sp.ofs.excel.model.Table;
 import cn.sp.ofs.excel.utils.DBConnectionPool;
 import cn.sp.ofs.excel.utils.DBUtils;
 
-
 /**
 * @author 陈嘉镇
 * @version 创建时间：2014-6-12 上午10:41:08
@@ -47,15 +46,16 @@ import cn.sp.ofs.excel.utils.DBUtils;
 public class Helper {
 
 	private Logger logger = LoggerFactory.getLogger(getClass());
-	private static int tableId;
-	
+
 	/**
 	 * 是否调试模式，调试模式下table会保留在数据库。
 	 */
 	private boolean debug;
 
-	public String[] transformDDL(InputStream inputXLS,int skipRow) {
-		List<Table> tList = read2TableModel(inputXLS,skipRow);
+	private GenTableNameStrategy genTableNameStrategy;
+
+	public String[] transformDDL(InputStream inputXLS, int skipRow) {
+		List<Table> tList = read2TableModel(inputXLS, skipRow);
 		return getCreatedSQL(tList);
 	}
 
@@ -72,7 +72,7 @@ public class Helper {
 
 			Workbook workbook = WorkbookFactory.create(inputXLS);
 			for (int sheetNo = 0; sheetNo < workbook.getNumberOfSheets(); sheetNo++) {
-				Table table = readSheetToTable(workbook, sheetNo,skipRow);
+				Table table = readSheetToTable(workbook, sheetNo, skipRow);
 				tables.add(table);
 			}
 
@@ -105,56 +105,52 @@ public class Helper {
 	private Table readSheetToTable(Workbook workbook, int sheetNo, int skipRow) throws IllegalAccessException,
 			InvocationTargetException {
 		Sheet sheet = workbook.getSheetAt(sheetNo);
-		
+
 		Row row = getTitleRow(skipRow, sheet);
-		
-		
+
 		logger.info("LastCellNum:{}", row.getLastCellNum());
 		Table table = new Table();
-		table.setRowSize(sheet.getLastRowNum()+1-skipRow);
+		table.setRowSize(sheet.getLastRowNum() + 1 - skipRow);
 		table.setName(genTableName());
 		List<Column> cols = suitColumns(row);
 		table.setCols(cols);
-		
+
 		//设置cols数据
 		for (int j = 0; j < cols.size(); j++) {
 			Column col = cols.get(j);
 			List<String> datas = getColumnData(skipRow, sheet, table, j);
 			col.setDatas(datas);
 		}
-	
-		
-		
+
 		return table;
 	}
 
 	protected List<String> getColumnData(int skipRow, Sheet sheet, Table table, int j) {
-		List<String>datas = new ArrayList<String>();
-		for (int i = sheet.getFirstRowNum()+skipRow; i <=sheet.getLastRowNum(); i++) {
+		List<String> datas = new ArrayList<String>();
+		for (int i = sheet.getFirstRowNum() + skipRow; i <= sheet.getLastRowNum(); i++) {
 			Row row2 = sheet.getRow(i);
-			if (row2==null) {
-				logger.warn("跳过行：{}",i);
+			if (row2 == null) {
+				logger.warn("跳过行：{}", i);
 				//更新rowSize
-				table.setRowSize(table.getRowSize()-1);
+				table.setRowSize(table.getRowSize() - 1);
 				continue;
 			}
 			Cell cell = row2.getCell(j);
-			if (cell==null) {
+			if (cell == null) {
 				datas.add("");
 				continue;
-			}else {
-				if (cell.getCellType()==Cell.CELL_TYPE_NUMERIC) {
+			} else {
+				if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
 					if (cell instanceof XSSFCell) {
-						XSSFCell x = (XSSFCell)cell;
+						XSSFCell x = (XSSFCell) cell;
 						datas.add(x.getRawValue());
-					}else {
-						datas.add( cell.toString());
+					} else {
+						datas.add(cell.toString());
 					}
-				}else {
-					datas.add( cell.toString());
+				} else {
+					datas.add(cell.toString());
 				}
-				
-				
+
 			}
 		}
 		return datas;
@@ -167,11 +163,11 @@ public class Helper {
 	 * @return
 	 */
 	private Row getTitleRow(int skipRow, Sheet sheet) {
-		Row row ;
-		if (skipRow==0) {
-			 row = sheet.getRow(0);
-		}else {
-			 row = sheet.getRow(skipRow-1);
+		Row row;
+		if (skipRow == 0) {
+			row = sheet.getRow(0);
+		} else {
+			row = sheet.getRow(skipRow - 1);
 		}
 		return row;
 	}
@@ -197,12 +193,14 @@ public class Helper {
 	 * @return
 	 */
 	private synchronized String genTableName() {
-		return "tab"+(++tableId);
+		if (genTableNameStrategy==null) {
+			genTableNameStrategy = new SimpleGenTableNameStrategy();
+		}
+		return genTableNameStrategy.genName();
 	}
 
-	
-	public List<Table>  insert2DB(InputStream inputXLS, int skipRow) {
-		List<Table> tables = read2TableModel(inputXLS,skipRow);
+	public List<Table> insert2DB(InputStream inputXLS, int skipRow) {
+		List<Table> tables = read2TableModel(inputXLS, skipRow);
 		String[] ss = getCreatedSQL(tables);
 		createTable2DB(ss);
 		String[] ss2 = getInsertSQL(tables);
@@ -217,9 +215,9 @@ public class Helper {
 			for (String string : ssStrings) {
 				insertSqlList.add(string);
 			}
-			
+
 		}
-		return insertSqlList.toArray(new String[]{});
+		return insertSqlList.toArray(new String[] {});
 	}
 
 	private void insertData2DB(String[] ss2) {
@@ -228,32 +226,32 @@ public class Helper {
 		Statement stat = null;
 		try {
 			defaultAutoCommit = connection.getAutoCommit();
-			connection.setAutoCommit(false); 
+			connection.setAutoCommit(false);
 			stat = connection.createStatement();
-			
+
 			for (String s : ss2) {
 				stat.addBatch(s);
 			}
 			stat.executeBatch();
 			connection.commit();
 		} catch (SQLException e) {
-			logger.error("error.",e);
+			logger.error("error.", e);
 			try {
 				connection.rollback();
 			} catch (SQLException e1) {
-				logger.error("error.",e1);
+				logger.error("error.", e1);
 			}
-		}finally{
+		} finally {
 			try {
 				connection.setAutoCommit(defaultAutoCommit);
 			} catch (SQLException e1) {
-				logger.error("error.",e1);
-			} 
-			if (stat!=null) {
+				logger.error("error.", e1);
+			}
+			if (stat != null) {
 				try {
 					stat.close();
 				} catch (SQLException e) {
-					logger.error("error.",e);
+					logger.error("error.", e);
 				}
 			}
 		}
@@ -264,16 +262,16 @@ public class Helper {
 		Statement stat = null;
 		try {
 			for (String s : ss) {
-				
+
 				stat = connection.createStatement();
-				logger.info("ddl:{}",s);
+				logger.info("ddl:{}", s);
 				stat.executeUpdate(s);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			
-		}finally{
-			if (stat!=null) {
+
+		} finally {
+			if (stat != null) {
 				try {
 					stat.close();
 				} catch (SQLException e) {
@@ -292,51 +290,48 @@ public class Helper {
 	 * @throws FileNotFoundException 
 	 * @throws SQLException 
 	 */
-	public Workbook query(String sql, File[] dataExcels,int[]skipRows) throws FileNotFoundException, SQLException {
-//		excel 导入数据库
+	public Workbook query(String sql, File[] dataExcels, int[] skipRows) throws FileNotFoundException, SQLException {
+		//		excel 导入数据库
 		List<Table> ts = new ArrayList<Table>();
-		for (int i = 0;i<dataExcels.length;i++) {
+		for (int i = 0; i < dataExcels.length; i++) {
 			File dataExcel = dataExcels[i];
 			InputStream inputXLS = new FileInputStream(dataExcel);
-			ts .addAll(insert2DB(inputXLS, skipRows[i]));
+			ts.addAll(insert2DB(inputXLS, skipRows[i]));
 		}
-		
-//		将sql中的table前缀,替换为实际的table名
-		sql = replaceTablePrefix(sql,ts);
-		
-//		将sql中的列部分添加中文注释
-		 sql = addComment(sql,ts);
-		
-		
-//		执行sql获取bean集合
+
+		//		将sql中的table前缀,替换为实际的table名
+		sql = replaceTablePrefix(sql, ts);
+
+		//		将sql中的列部分添加中文注释
+		sql = addComment(sql, ts);
+
+		//		执行sql获取bean集合
 		Statement statement = DBConnectionPool.getConnection().createStatement();
-		ResultSet rs =statement.executeQuery(sql);
-		
+		ResultSet rs = statement.executeQuery(sql);
+
 		//查询后dorp掉table，减少资源的占用
 		if (!debug) {
 			dropTables(ts);
 		}
-		
-		List<List<String>> ls =DBUtils.convertList(rs);	
-		
-		
-//		将bean集合转换为excel文件
-		Workbook w  = convertList2Excel(ls);
-		
+
+		List<List<String>> ls = DBUtils.convertList(rs);
+
+		//		将bean集合转换为excel文件
+		Workbook w = convertList2Excel(ls);
+
 		return w;
 	}
 
 	private String replaceTablePrefix(String sql, List<Table> ts) {
-		for (int i = 1; i <=ts.size(); i++) {
-			Table table = ts.get(i-1);
+		for (int i = 1; i <= ts.size(); i++) {
+			Table table = ts.get(i - 1);
 			//替换
-			sql = sql.replace("t"+i, table.getName());
+			sql = sql.replace("t" + i, table.getName());
 		}
-		
-		logger.info("sql:{}",sql);
+
+		logger.info("sql:{}", sql);
 		return sql;
 	}
-	
 
 	private void dropTables(List<Table> ts) throws SQLException {
 		String sql2 = "drop table {0}";
@@ -344,42 +339,42 @@ public class Helper {
 		Statement statement = connection.createStatement();
 		for (Table table : ts) {
 			String sql3 = cn.sp.ofs.excel.utils.StringUtils.formatMsg(sql2, table.getName());
-			logger.info("sql:{}",sql3);
+			logger.info("sql:{}", sql3);
 			statement.execute(sql3);
 		}
 	}
 
 	public String addComment(String sql, List<Table> ts) {
 		//获取select和from之间的部分
-		String mString = sql.substring(sql.indexOf("select")+7, sql.indexOf(" from"));
+		String mString = sql.substring(sql.indexOf("select") + 7, sql.indexOf(" from"));
 		//distinct
-		if (mString.indexOf("distinct")>=0) {
-			mString= mString.replace("distinct", " ");
+		if (mString.indexOf("distinct") >= 0) {
+			mString = mString.replace("distinct", " ");
 		}
-		
+
 		//处理
 		String pString = mString;
 		String[] ps = pString.split(",");
 		List<String> pList = new ArrayList<String>();
 		for (String p : ps) {
-			if (p.indexOf(".*")>=0) {
+			if (p.indexOf(".*") >= 0) {
 				//全选择查询
-				p = findAllSelect(ts,p.trim());
-			}else if (p.toLowerCase().indexOf("as")>=0) {
-//				do nothing
-			}else {
-				String c = findComment(ts,p.trim());
+				p = findAllSelect(ts, p.trim());
+			} else if (p.toLowerCase().indexOf("as") >= 0) {
+				//				do nothing
+			} else {
+				String c = findComment(ts, p.trim());
 				if (StringUtils.isNotBlank(c)) {
-					p+=" as \""+c+"\"";
-				}	
+					p += " as \"" + c + "\"";
+				}
 			}
 			pList.add(p);
 		}
-		pString = StringUtils.join(pList,",");
-		
+		pString = StringUtils.join(pList, ",");
+
 		//替换
 		sql = sql.replace(mString.trim(), pString);
-		logger.info("sql:{}",sql);
+		logger.info("sql:{}", sql);
 		return sql;
 	}
 
@@ -396,11 +391,11 @@ public class Helper {
 		String[] ss = p.split("\\.");
 		String t = ss[0];
 		Table table = findTable(ts, t);
-		if (table==null) {
+		if (table == null) {
 			return "";
 		}
 		return table.getAllSelect();
-		
+
 	}
 
 	/**
@@ -418,7 +413,7 @@ public class Helper {
 		String t = ss[0];
 		String c = ss[1];
 		Table table = findTable(ts, t);
-		if (table==null) {
+		if (table == null) {
 			return "";
 		}
 		return table.findComment(c);
@@ -439,7 +434,7 @@ public class Helper {
 		return ta;
 	}
 
-	public Workbook convertBeansExcel(List<Column> cols,int dataRows) {
+	public Workbook convertBeansExcel(List<Column> cols, int dataRows) {
 		Workbook workbook = new HSSFWorkbook();
 		Sheet sheet = workbook.createSheet("Sheet1");
 		for (int i = 0; i < dataRows; i++) {
@@ -447,20 +442,20 @@ public class Helper {
 			for (int j = 0; j < cols.size(); j++) {
 				Column col = cols.get(j);
 				Cell c = row.createCell(j);
-				List<String>datas = col.getDatas();
-				if (i==0) {
+				List<String> datas = col.getDatas();
+				if (i == 0) {
 					c.setCellValue(col.getName());
-				}else {
-					c.setCellValue(datas.get(i-1));
+				} else {
+					c.setCellValue(datas.get(i - 1));
 				}
-				
+
 			}
 		}
 		return workbook;
-		
+
 	}
-	
-	public Workbook convertList2Excel(List<List<String>>  rs) {
+
+	public Workbook convertList2Excel(List<List<String>> rs) {
 		Workbook workbook = new HSSFWorkbook();
 		Sheet sheet = workbook.createSheet("Sheet1");
 		for (int i = 0; i < rs.size(); i++) {
@@ -470,10 +465,10 @@ public class Helper {
 				Cell c = row.createCell(k);
 				c.setCellValue(cList.get(k));
 			}
-			
+
 		}
 		return workbook;
-		
+
 	}
 
 	public boolean isDebug() {
@@ -483,5 +478,13 @@ public class Helper {
 	public void setDebug(boolean debug) {
 		this.debug = debug;
 	}
-	
+
+	public GenTableNameStrategy getGenTableNameStrategy() {
+		return genTableNameStrategy;
+	}
+
+	public void setGenTableNameStrategy(GenTableNameStrategy genTableNameStrategy) {
+		this.genTableNameStrategy = genTableNameStrategy;
+	}
+
 }
