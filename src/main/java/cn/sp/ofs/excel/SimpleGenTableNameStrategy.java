@@ -5,12 +5,17 @@ package cn.sp.ofs.excel;
 * @email benjaminchen555@gmail.com
 */
 public class SimpleGenTableNameStrategy implements GenTableNameStrategy {
+	private static final String preFix = "tab";
 	private static int tableId;
 	@Override
 	public String genName() {
 		synchronized (SimpleGenTableNameStrategy.class) {
-			return "tab"+(++tableId);
+			return preFix+(++tableId);
 		}
+	}
+	@Override
+	public String getPerFix() {
+		return preFix;
 	}
 
 }

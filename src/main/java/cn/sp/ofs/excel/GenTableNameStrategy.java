@@ -7,5 +7,11 @@ package cn.sp.ofs.excel;
 public interface GenTableNameStrategy {
 	
 	public String genName();
+	
+	/**
+	 * 获取表前缀
+	 * @return
+	 */
+	public String getPerFix();
 
 }

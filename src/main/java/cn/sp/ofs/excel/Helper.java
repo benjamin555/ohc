@@ -291,6 +291,7 @@ public class Helper {
 	 * @throws SQLException 
 	 */
 	public Workbook query(String sql, File[] dataExcels, int[] skipRows) throws FileNotFoundException, SQLException {
+		Assert.assertTrue("sql 必须不为空！", StringUtils.isNotEmpty(sql));
 		//		excel 导入数据库
 		List<Table> ts = new ArrayList<Table>();
 		for (int i = 0; i < dataExcels.length; i++) {
@@ -384,7 +385,7 @@ public class Helper {
 	 * @param p
 	 */
 	private String findAllSelect(List<Table> ts, String p) {
-		Pattern pat = Pattern.compile("tab\\d+\\.\\*");
+		Pattern pat = Pattern.compile(getGenTableNameStrategy().getPerFix()+"\\d+\\.\\*");
 		Matcher m = pat.matcher(p);
 		boolean b = m.matches();
 		Assert.assertTrue("字符串格式不正确", b);
@@ -405,7 +406,7 @@ public class Helper {
 	 * @return
 	 */
 	private String findComment(List<Table> ts, String p) {
-		Pattern pat = Pattern.compile("tab\\d+\\.c\\d+");
+		Pattern pat = Pattern.compile(getGenTableNameStrategy().getPerFix()+"\\d+\\.c\\d+");
 		Matcher m = pat.matcher(p);
 		boolean b = m.matches();
 		Assert.assertTrue("字符串格式不正确", b);
