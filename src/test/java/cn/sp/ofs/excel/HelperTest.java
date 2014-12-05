@@ -133,6 +133,7 @@ public class HelperTest {
 	 */
 	public void testAddComment() throws Exception {
 		Helper h = new Helper();
+		h.setGenTableNameStrategy(new SimpleGenTableNameStrategy());
 		List<Table> ts = new ArrayList<Table>();
 		Table t1 = new Table();
 		t1.setName("tab1");
