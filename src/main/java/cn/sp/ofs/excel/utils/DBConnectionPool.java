@@ -12,7 +12,7 @@ import org.h2.jdbcx.JdbcConnectionPool;
 public class DBConnectionPool{
 	
 	private static final String JDBC_H2_MEM = "jdbc:h2:mem:ofs-help";
-	private static final String JDBC_H2_DISK = "jdbc:h2:E:/h2db/ofs;AUTO_SERVER=TRUE";
+	private static final String JDBC_H2_DISK = System.getenv("JDBC_H2_DISK");
 	private static JdbcConnectionPool pool=JdbcConnectionPool.create(JDBC_H2_DISK, "sa", "");
 	
 	static{
