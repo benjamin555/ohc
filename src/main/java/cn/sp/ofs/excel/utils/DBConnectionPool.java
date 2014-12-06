@@ -13,7 +13,7 @@ public class DBConnectionPool{
 	
 	private static final String JDBC_H2_MEM = "jdbc:h2:mem:ofs-help";
 	private static final String JDBC_H2_DISK = System.getenv("JDBC_H2_DISK");
-	private static JdbcConnectionPool pool=JdbcConnectionPool.create(JDBC_H2_DISK, "sa", "");
+	private static JdbcConnectionPool pool=JdbcConnectionPool.create(JDBC_H2_MEM, "sa", "");
 	
 	static{
 		pool.setLoginTimeout(10000);//建立连接超时时间
