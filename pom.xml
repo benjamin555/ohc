@@ -51,8 +51,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>1.6</maven.compiler.source>
-		<maven.compiler.target>1.6</maven.compiler.target>
+		<maven.compiler.source>1.7</maven.compiler.source>
+		<maven.compiler.target>1.7</maven.compiler.target>
 		<junit.version>4.11</junit.version>
 		<jxls.version>1.0.2</jxls.version>
 		<slf4j.version>1.7.1</slf4j.version>
@@ -79,7 +79,7 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>com.h2.database</groupId>
+			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<version>${h2.version}</version>
 		</dependency>

@@ -207,6 +207,12 @@ public class Helper {
 		insertData2DB(ss2);
 		return tables;
 	}
+	
+	public String[] getInsertSQL(InputStream inputXLS, int skipRow) {
+		List<Table> tables = read2TableModel(inputXLS, skipRow);
+		String[] ss2 = getInsertSQL(tables);
+		return ss2;
+	}
 
 	private String[] getInsertSQL(List<Table> tables) {
 		List<String> insertSqlList = new ArrayList<String>();

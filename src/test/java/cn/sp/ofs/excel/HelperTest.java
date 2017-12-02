@@ -68,6 +68,23 @@ public class HelperTest {
 		}
 	}
 	
+	@Test
+	public void testGetInsertSQL() throws Exception {
+		dataExcels =  new File[1];
+		dataExcels[0] = new File("");
+		for (int i = 0; i < dataExcels.length; i++) {
+			File dataExcel = dataExcels[i];
+			InputStream inputXLS = new FileInputStream(dataExcel);
+			Helper h = new Helper();
+			String[] ddl = h.getInsertSQL(inputXLS, 2);
+			for (int j = 0; j < ddl.length; j++) {
+				String d = ddl[j];
+				logger.info("ddl:{}",d);
+
+			}
+		}
+	}
+	
 	
 	@Test
 	public void testQuery() throws Exception {
